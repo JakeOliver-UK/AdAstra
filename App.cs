@@ -1,5 +1,6 @@
 ﻿using AdAstra.Engine;
 using AdAstra.Engine.Managers.Global;
+using AdAstra.Scenes;
 using AdAstra.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -31,6 +32,9 @@ namespace AdAstra
 
             SettingsManager.Initialize();
             
+            SceneManager.Initialize();
+            SceneManager.Add("MainScene", new MainScene());
+            SceneManager.Switch("MainScene");
 
             Log.WriteLine(LogLevel.Info, "Application initialized successfully.");
         }
@@ -46,12 +50,14 @@ namespace AdAstra
             FPS.Update();
             Window.Title = SettingsManager.Settings.ShowFPS ? $"{AppInfo.Name} v{AppInfo.Version} - FPS: {FPS.Current:n0}" : $"{AppInfo.Name} v{AppInfo.Version}";
 
+            SceneManager.Current?.Update();
+
             base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            
+            SceneManager.Current?.Draw();
 
             base.Draw(gameTime);
         }
@@ -63,6 +69,7 @@ namespace AdAstra
             _spriteBatch?.Dispose();
             _spriteBatch = null;
             SettingsManager.Dispose();
+            SceneManager.Dispose();
 
             Log.WriteLine(LogLevel.Info, "Application shut down successfully.");
         }
