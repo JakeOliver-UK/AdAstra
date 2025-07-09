@@ -12,7 +12,9 @@ namespace AdAstra.Engine.Managers.Instance
     internal class ImageManager : IDisposable
     {
         public static string DirectoryPath => Path.Combine(AssetManager.DirectoryPath, "Images");
+        public Texture2D Pixel => _pixel;
 
+        private Texture2D _pixel;
         private Dictionary<string, Texture2D> _images;
 
         public void Initialize()
@@ -23,6 +25,9 @@ namespace AdAstra.Engine.Managers.Instance
             if (!Directory.Exists(DirectoryPath)) Directory.CreateDirectory(DirectoryPath);
 
             LoadDirectory(DirectoryPath);
+
+            _pixel = new(App.Instance.GraphicsDevice, 1, 1);
+            _pixel.SetData([Color.White]);
 
             Log.WriteLine(LogLevel.Info, "Image Manager initialized successfully.");
         }

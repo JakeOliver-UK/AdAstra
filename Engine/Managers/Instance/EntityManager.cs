@@ -135,7 +135,7 @@ namespace AdAstra.Engine.Managers.Instance
         public Entity this[string name] => Get(name);
         public Entity[] GetActive() => [.. _entities.Where(e => e != null && e.IsActive)];
         public Entity[] GetInactive() => [.. _entities.Where(e => e != null && !e.IsActive)];
-        public bool Contains(string name) => _entities.Any(e => e != null && e.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+        public bool Contains(string name) => _entities.Any(x => x.Name == name);
         public int CountActive() => _entities.Count(e => e != null && e.IsActive);
         public int CountInactive() => _entities.Count(e => e != null && !e.IsActive);
         public int Count => _entities.Length;
