@@ -9,15 +9,18 @@ namespace AdAstra.Engine.Entities.Components
     internal class Collider : Component
     {
         public int Sides { get => _sides; set => _sides = Math.Max(3, value); }
-        public float Radius { get => _radius; set => _radius = MathF.Max(0.0f, value); }
-        public float AdjustedRotationDegrees { get; set; } = 45.0f;
+        public float Width { get => _width; set => _width = MathF.Max(0.0f, value); }
+        public float Height { get => _height; set => _height = MathF.Max(0.0f, value); }
+        public float AdjustedRotationDegrees { get; set; } = 0.0f;
         public Polygon Bounds => _bounds;
         public bool DrawBounds { get; set; } = false;
+        public Color BoundsColor { get; set; } = Color.Lime;
         public int BoundsLayer { get; set; } = 0;
 
         private Polygon _bounds;
-        private int _sides = 4;
-        private float _radius = 32.0f;
+        private int _sides = 100;
+        private float _width = 64.0f;
+        private float _height = 32.0f;
         private readonly List<Collider> _collisions = [];
 
         public delegate void CollisionEventHandler(Collider other);
@@ -38,12 +41,12 @@ namespace AdAstra.Engine.Entities.Components
         {
             base.Draw();
 
-            if (DrawBounds) App.Instance.SpriteBatch.DrawPolygon(_bounds, Color.Lime, 1.0f, BoundsLayer);
+            if (DrawBounds) App.Instance.SpriteBatch.DrawPolygon(_bounds, BoundsColor, 1.0f, BoundsLayer);
         }
 
         private void UpdateBounds()
         {
-            _bounds = new(Entity.Transform.Position, _sides, _radius, Entity.Transform.Rotation + MathHelper.ToRadians(AdjustedRotationDegrees));
+            _bounds = new(Entity.Transform.Position, _sides, _width, _height, Entity.Transform.Rotation + MathHelper.ToRadians(AdjustedRotationDegrees));
         }
 
         private void CheckCollisions()
