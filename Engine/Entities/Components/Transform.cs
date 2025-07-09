@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 
 namespace AdAstra.Engine.Entities.Components
 {
@@ -47,5 +48,10 @@ namespace AdAstra.Engine.Entities.Components
         }
 
         public float LocalRotation { get; set; } = 0.0f;
+
+        public Vector2 Forward => new (MathF.Cos(Rotation - MathF.PI / 2), MathF.Sin(Rotation - MathF.PI / 2));
+        public Vector2 Backward => -Forward;
+        public Vector2 Right => new(MathF.Cos(Rotation), MathF.Sin(Rotation));
+        public Vector2 Left => -Right;
     }
 }

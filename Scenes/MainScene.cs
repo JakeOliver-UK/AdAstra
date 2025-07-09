@@ -26,8 +26,7 @@ namespace AdAstra.Scenes
         {
             base.Update();
 
-            if (InputManager.IsKeyDown(Keys.W)) _player.Transform.Position += new Vector2(0.0f, -1.0f) * 100.0f * Time.Delta;
-            if (InputManager.IsKeyDown(Keys.S)) _player.Transform.Position += new Vector2(0.0f, 1.0f) * 100.0f * Time.Delta;
+            if (InputManager.IsKeyDown(Keys.W)) _player.Transform.Position += _player.Transform.Forward * 100.0f * Time.Delta;
             if (InputManager.IsKeyDown(Keys.A)) _player.Transform.Rotation -= 1.0f * Time.Delta;
             if (InputManager.IsKeyDown(Keys.D)) _player.Transform.Rotation += 1.0f * Time.Delta;
         }
