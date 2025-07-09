@@ -72,13 +72,15 @@ namespace AdAstra.Engine.Managers.Instance
                     Texture2D image = Texture2D.FromFile(App.Instance.GraphicsDevice, files[i]);
 
                     Color[] data = new Color[image.Width * image.Height];
-                    
+                    image.GetData(data);
+
                     for (int j = 0; j < data.Length; j++)
                     {
-                        data[j] = Color.FromNonPremultiplied(data[j].R, data[j].G, data[j].B, data[j].A);
+                        Color c = data[j];
+                        data[j] = Color.FromNonPremultiplied(c.R, c.G, c.B, c.A);
                     }
-                    
-                    image.SetData(data);    
+
+                    image.SetData(data);
 
                     Add(fileName, image, canOverride);
                     Log.WriteLine(LogLevel.Info, $"Image '{fileName}' loaded to Image Manager successfully from file '{files[i]}'.");
@@ -167,6 +169,8 @@ namespace AdAstra.Engine.Managers.Instance
 
             _images.Clear();
             _images = null;
+
+            _pixel.Dispose();
 
             Log.WriteLine(LogLevel.Info, "Image Manager unloaded successfully.");
         }
