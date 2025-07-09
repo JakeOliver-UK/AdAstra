@@ -11,8 +11,31 @@ namespace AdAstra.Engine.Entities.Components
         public Color Color { get; set; } = Color.White;
         public float Opacity { get; set; } = 1.0f;
         public Vector2 Scale { get; set; } = Vector2.One;
-        public Vector2 Origin { get; set; } = Vector2.Zero;
+        public ImageAlignment Alignment { get; set; } = ImageAlignment.Center;
         public int Layer { get; set; } = 0;
+
+        public Vector2 Origin
+        {
+            get
+            {
+                if (Image == null) return Vector2.Zero;
+                Texture2D texture = AssetManager.Images[Image];
+                if (texture == null) return Vector2.Zero;
+                return Alignment switch
+                {
+                    ImageAlignment.TopLeft => Vector2.Zero,
+                    ImageAlignment.TopCenter => new Vector2(texture.Width / 2.0f, 0.0f),
+                    ImageAlignment.TopRight => new Vector2(texture.Width, 0.0f),
+                    ImageAlignment.CenterLeft => new Vector2(0, texture.Height / 2f),
+                    ImageAlignment.Center => new Vector2(texture.Width / 2.0f, texture.Height / 2.0f),
+                    ImageAlignment.CenterRight => new Vector2(texture.Width, texture.Height / 2.0f),
+                    ImageAlignment.BottomLeft => new Vector2(0, texture.Height),
+                    ImageAlignment.BottomCenter => new Vector2(texture.Width / 2.0f, texture.Height),
+                    ImageAlignment.BottomRight => new Vector2(texture.Width, texture.Height),
+                    _ => Vector2.Zero,
+                };
+            }
+        }
 
         public override void Draw()
         {
@@ -25,5 +48,18 @@ namespace AdAstra.Engine.Entities.Components
 
             App.Instance.SpriteBatch.Draw(texture, Entity.Transform.Position, null, color, Entity.Transform.Rotation, Origin, Scale, SpriteEffects.None, layerDepth);
         }
+    }
+
+    internal enum ImageAlignment
+    {
+        TopLeft,
+        TopCenter,
+        TopRight,
+        CenterLeft,
+        Center,
+        CenterRight,
+        BottomLeft,
+        BottomCenter,
+        BottomRight
     }
 }
