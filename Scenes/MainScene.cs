@@ -22,6 +22,7 @@ namespace AdAstra.Scenes
             _player.Transform.Position = new(100.0f);
             _player.AddComponent<ImageRenderer>().Image = "playerShip1_blue";
             _player.GetComponent<ImageRenderer>().Scale = new(0.5f);
+            _player.GetComponent<ImageRenderer>().Layer = 1;
             _player.AddComponent<Collider>().Sides = 100;
             _player.GetComponent<Collider>().Width = 64.0f;
             _player.GetComponent<Collider>().Height = 48.0f;
@@ -34,6 +35,10 @@ namespace AdAstra.Scenes
             _other.AddComponent<Collider>().Sides = 100;
             _other.GetComponent<Collider>().Width = 64.0f;
             _other.GetComponent<Collider>().Height = 48.0f;
+
+            Camera.IsFollowingTarget = true;
+            Camera.Target = _player;
+            Camera.Entity.Transform.Position = _player.Transform.Position;
         }
 
         public override void Update()
