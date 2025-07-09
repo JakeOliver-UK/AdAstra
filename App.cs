@@ -50,6 +50,7 @@ namespace AdAstra
         {
             Time.Update(gameTime);
             FPS.Update();
+            InputManager.Update();
             Window.Title = SettingsManager.Settings.ShowFPS ? $"{AppInfo.Name} v{AppInfo.Version} - FPS: {FPS.Current:n0}" : $"{AppInfo.Name} v{AppInfo.Version}";
 
             SceneManager.Current?.Update();
