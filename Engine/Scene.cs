@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using AdAstra.Engine.Managers.Instance;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace AdAstra.Engine
@@ -6,9 +7,23 @@ namespace AdAstra.Engine
     internal abstract class Scene
     {
         public Color BackgroundColor { get; set; } = Color.CornflowerBlue;
+        public EntityManager WorldEntityManager => _worldEntityManager;
+        public EntityManager OverlayEntityManager => _overlayEntityManager;
 
-        public virtual void Initialize() { }
-        public virtual void Update() { }
+        private EntityManager _worldEntityManager;
+        private EntityManager _overlayEntityManager;
+
+        public virtual void Initialize()
+        {
+            _worldEntityManager = new(false);
+            _overlayEntityManager = new(true);
+        }
+        
+        public virtual void Update()
+        {
+            _worldEntityManager.Update();
+            _overlayEntityManager.Update();
+        }
         
         public virtual void Draw()
         {
@@ -23,8 +38,20 @@ namespace AdAstra.Engine
             App.Instance.SpriteBatch.End();
         }
 
-        public virtual void DrawWorld() { }
-        public virtual void DrawOverlay() { }
-        public virtual void Dispose() { }
+        public virtual void DrawWorld()
+        {
+            _worldEntityManager.Draw();
+        }
+
+        public virtual void DrawOverlay()
+        {
+            _overlayEntityManager.Draw();
+        }
+
+        public virtual void Dispose()
+        {
+            _worldEntityManager.Dispose();
+            _overlayEntityManager.Dispose();
+        }
     }
 }
