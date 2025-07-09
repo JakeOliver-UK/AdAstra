@@ -1,4 +1,5 @@
-﻿using AdAstra.Engine.Managers.Global;
+﻿using AdAstra.Engine;
+using AdAstra.Engine.Managers.Global;
 using AdAstra.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -29,7 +30,7 @@ namespace AdAstra
             base.Initialize();
 
             SettingsManager.Initialize();
-            Window.Title = $"{AppInfo.Name} v{AppInfo.Version}";
+            
 
             Log.WriteLine(LogLevel.Info, "Application initialized successfully.");
         }
@@ -41,7 +42,9 @@ namespace AdAstra
 
         protected override void Update(GameTime gameTime)
         {
-
+            Time.Update(gameTime);
+            FPS.Update();
+            Window.Title = SettingsManager.Settings.ShowFPS ? $"{AppInfo.Name} v{AppInfo.Version} - FPS: {FPS.Current:n0}" : $"{AppInfo.Name} v{AppInfo.Version}";
 
             base.Update(gameTime);
         }
