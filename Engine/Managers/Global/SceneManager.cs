@@ -1,6 +1,6 @@
-﻿using AdAstra.Scenes;
-using AdAstra.Utils;
+﻿using AdAstra.Utils;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AdAstra.Engine.Managers.Global
 {
@@ -115,6 +115,7 @@ namespace AdAstra.Engine.Managers.Global
             Log.WriteLine(LogLevel.Info, "Scene Manager unloaded successfully.");
         }
 
+        public static Scene[] GetAll() => [.. _scenes.Values];
         public static bool Contains(string name) => _scenes.ContainsKey(name);
         public static int Count => _scenes.Count;
     }

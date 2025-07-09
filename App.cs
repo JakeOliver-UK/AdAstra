@@ -30,6 +30,8 @@ namespace AdAstra
 
             base.Initialize();
 
+            AssetManager.Initialize();
+
             SettingsManager.Initialize();
             
             SceneManager.Initialize();
@@ -68,8 +70,10 @@ namespace AdAstra
             
             _spriteBatch?.Dispose();
             _spriteBatch = null;
+
             SettingsManager.Dispose();
             SceneManager.Dispose();
+            AssetManager.Dispose();
 
             Log.WriteLine(LogLevel.Info, "Application shut down successfully.");
         }
