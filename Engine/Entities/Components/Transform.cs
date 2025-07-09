@@ -6,46 +6,45 @@ namespace AdAstra.Engine.Entities.Components
     internal class Transform : Component
     {
         public Vector2 Position
-        { 
-            get
-            {
-                if (Entity.IsRoot) return LocalPosition;
-                else
-                {
-                    return Entity.Parent.GetComponent<Transform>().Position + Vector2.Transform(LocalPosition, Matrix.CreateRotationZ(Entity.Parent.GetComponent<Transform>().Rotation));
-                }
-            }
+        {
+            get => new(WorldMatrix.M41, WorldMatrix.M42);
             set
             {
-                if (Entity.IsRoot) LocalPosition = value;
+                if (Entity.IsRoot)
+                {
+                    LocalPosition = value;
+                }
                 else
                 {
-                    LocalPosition = Vector2.Transform(value - Entity.Parent.GetComponent<Transform>().Position, Matrix.CreateRotationZ(-Entity.Parent.GetComponent<Transform>().Rotation));
+                    Matrix parentWM = Entity.Parent.GetComponent<Transform>().WorldMatrix;
+                    Matrix.Invert(ref parentWM, out Matrix invParent);
+                    Vector3 local = Vector3.Transform(new Vector3(value, 0f), invParent);
+                    LocalPosition = new Vector2(local.X, local.Y);
                 }
             }
         }
 
         public Vector2 LocalPosition { get; set; } = Vector2.Zero;
-        
+
         public float Rotation
         {
-            get
-            {
-                if (Entity.IsRoot) return LocalRotation;
-                else
-                {
-                    return Entity.Parent.GetComponent<Transform>().Rotation + LocalRotation;
-                }
-            }
+            get => MathF.Atan2(WorldMatrix.M12, WorldMatrix.M11);
             set
             {
-                if (Entity.IsRoot) LocalRotation = value;
+                if (Entity.IsRoot)
+                {
+                    LocalRotation = value;
+                }
                 else
                 {
-                    LocalRotation = value - Entity.Parent.GetComponent<Transform>().Rotation;
+                    float parentRot = Entity.Parent.GetComponent<Transform>().Rotation;
+                    LocalRotation = value - parentRot;
                 }
             }
         }
+
+        public Matrix LocalMatrix => Matrix.CreateRotationZ(LocalRotation) * Matrix.CreateTranslation(new Vector3(LocalPosition, 0f));
+        public Matrix WorldMatrix => Entity.IsRoot ? LocalMatrix : LocalMatrix * Entity.Parent.GetComponent<Transform>().WorldMatrix;
 
         public float LocalRotation { get; set; } = 0.0f;
 

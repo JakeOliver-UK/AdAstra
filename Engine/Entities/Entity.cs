@@ -99,6 +99,7 @@ namespace AdAstra.Engine.Entities
             if (parent == null || parent == this || parent == _parent || _children.Contains(parent)) return;
             if (_parent != null) RemoveParent();
             parent.AddChild(this);
+            _parent = parent;
         }
 
         public void RemoveParent()
@@ -160,7 +161,11 @@ namespace AdAstra.Engine.Entities
             if (!_isActive || _children == null) return;
             for (int i = 0; i < _children.Count; i++)
             {
+                if (i >= _children.Count) break;
+                if (_children[i] == null) continue;
                 _children[i].RemoveParent();
+                if (i >= _children.Count) break;
+                if (_children[i] == null) continue;
                 if (shouldDispose) _children[i].Dispose();
             }
             _children.Clear();
