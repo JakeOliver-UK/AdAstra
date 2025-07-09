@@ -1,4 +1,5 @@
-﻿using AdAstra.Utils;
+﻿using AdAstra.Engine.Managers.Global;
+using AdAstra.Utils;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -23,13 +24,14 @@ namespace AdAstra
 
         protected override void Initialize()
         {
-            Log.WriteLine("Initializing application...");
+            Log.WriteLine(LogLevel.Info, "Initializing application...");
 
             base.Initialize();
 
+            SettingsManager.Initialize();
             Window.Title = $"{AppInfo.Name} v{AppInfo.Version}";
 
-            Log.WriteLine("Application initialized successfully.");
+            Log.WriteLine(LogLevel.Info, "Application initialized successfully.");
         }
 
         protected override void LoadContent()
@@ -53,12 +55,13 @@ namespace AdAstra
 
         protected override void UnloadContent()
         {
-            Log.WriteLine("Shutting down application...");
+            Log.WriteLine(LogLevel.Info, "Shutting down application...");
             
             _spriteBatch?.Dispose();
             _spriteBatch = null;
-            
-            Log.WriteLine("Application shut down successfully.");
+            SettingsManager.Dispose();
+
+            Log.WriteLine(LogLevel.Info, "Application shut down successfully.");
         }
     }
 }
