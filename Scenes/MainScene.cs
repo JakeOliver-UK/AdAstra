@@ -11,6 +11,7 @@ namespace AdAstra.Scenes
     {
         private Entity _player;
         private Entity _other;
+        private Entity _uiText;
 
         public override void Initialize()
         {
@@ -35,6 +36,10 @@ namespace AdAstra.Scenes
             _other.AddComponent<Collider>().Sides = 100;
             _other.GetComponent<Collider>().Width = 64.0f;
             _other.GetComponent<Collider>().Height = 48.0f;
+
+            _uiText = OverlayEntityManager.Create("UIText");
+            _uiText.Transform.Position = new(10.0f, 10.0f);
+            _uiText.AddComponent<TextRenderer>().Text = "Press W to move forward, A/D to rotate";
 
             Camera.IsFollowingTarget = true;
             Camera.Target = _player;

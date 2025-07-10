@@ -4,6 +4,7 @@ using FontStashSharp;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace AdAstra.Engine.Managers.Instance
 {
@@ -39,9 +40,11 @@ namespace AdAstra.Engine.Managers.Instance
                 Log.WriteLine(LogLevel.Error, $"Unable to load fonts from directory '{path}' to Font Manager as directory does not exist.");
                 return;
             }
-            
-            string[] files = Directory.GetFiles(path, "*.ttf");
-            
+
+
+            string[] extensions = [".ttf", ".otf"];
+            string[] files = [.. Directory.GetFiles(path).Where(file => extensions.Contains(Path.GetExtension(file).ToLowerInvariant()))];
+
             if (files.Length == 0)
             {
                 Log.WriteLine(LogLevel.Warning, $"Unable to load fonts from directory '{path}' to Font Manager as no valid font files found in directory.");
