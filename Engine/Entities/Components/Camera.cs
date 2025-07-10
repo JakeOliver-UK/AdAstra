@@ -9,12 +9,17 @@ namespace AdAstra.Engine.Entities.Components
     {
         public Matrix TransformMatrix => _transformMatrix;
         public Matrix InverseMatrix => _inverseMatrix;
-        public float Zoom { get => _zoom; set => _zoom = MathF.Max(0.1f, value); }
+        public float Zoom { get => _zoom; set => _zoom = MathHelper.Clamp(value, MinZoom, MaxZoom); }
+        public float MinZoom { get => _minZoom; set => _minZoom = MathHelper.Clamp(value, 0.1f, _maxZoom); }
+        public float MaxZoom { get => _maxZoom; set => _maxZoom = MathHelper.Clamp(value, _minZoom, 10.0f); }
         public bool IsKeyboardControlled { get; set; } = false;
         public Keys KeyboardUp { get; set; } = Keys.Up;
         public Keys KeyboardDown { get; set; } = Keys.Down;
         public Keys KeyboardLeft { get; set; } = Keys.Left;
         public Keys KeyboardRight { get; set; } = Keys.Right;
+        public Keys KeyboardZoomIn { get; set; } = Keys.PageUp;
+        public Keys KeyboardZoomOut { get; set; } = Keys.PageDown;
+        public Keys KeyboardZoomReset { get; set; } = Keys.Home;
         public bool IsMouseControlled { get; set; } = false;
         public float Speed { get; set; } = 100.0f;
         public float EdgeMargin { get; set; } = 30.0f;
@@ -22,6 +27,8 @@ namespace AdAstra.Engine.Entities.Components
         public Entity Target { get; set; } = null;
 
         private float _zoom = 1.0f;
+        private float _minZoom = 0.5f;
+        private float _maxZoom = 2.5f;
         private Matrix _transformMatrix;
         private Matrix _inverseMatrix;
 
@@ -47,6 +54,9 @@ namespace AdAstra.Engine.Entities.Components
                 if (InputManager.IsKeyDown(KeyboardLeft)) movement.X -= Speed * Time.Delta;
                 if (InputManager.IsKeyDown(KeyboardRight)) movement.X += Speed * Time.Delta;
                 Entity.Transform.Position += movement;
+                if (InputManager.IsKeyDown(KeyboardZoomIn)) Zoom += 1.0f * Time.Delta;
+                if (InputManager.IsKeyDown(KeyboardZoomOut)) Zoom -= 1.0f * Time.Delta;
+                if (InputManager.IsKeyDown(KeyboardZoomReset)) Zoom = 1.0f;
             }
 
             if (IsMouseControlled)
@@ -56,6 +66,8 @@ namespace AdAstra.Engine.Entities.Components
                 if (mousePosition.Y > App.Instance.GraphicsDevice.Viewport.Height - EdgeMargin) Entity.Transform.Position += Entity.Transform.Backward * Speed * Time.Delta;
                 if (mousePosition.X < EdgeMargin) Entity.Transform.Position += Entity.Transform.Left * Speed * Time.Delta;
                 if (mousePosition.X > App.Instance.GraphicsDevice.Viewport.Width - EdgeMargin) Entity.Transform.Position += Entity.Transform.Right * Speed * Time.Delta;
+                if (InputManager.IsMouseScrollWheelUp()) Zoom += 1.0f * Time.Delta;
+                if (InputManager.IsMouseScrollWheelDown()) Zoom -= 1.0f * Time.Delta;
             }
 
             if (IsFollowingTarget && Target != null)

@@ -39,9 +39,10 @@ namespace AdAstra.Scenes
 
             _uiText = OverlayEntityManager.Create("UIText");
             _uiText.Transform.Position = new(10.0f, 10.0f);
-            _uiText.AddComponent<TextRenderer>().Text = "Press W to move forward, A/D to rotate";
+            _uiText.AddComponent<TextRenderer>().Text = $"FPS: {FPS.Current:n0}";
 
             Camera.IsFollowingTarget = true;
+            Camera.IsKeyboardControlled = true;
             Camera.Target = _player;
             Camera.Entity.Transform.Position = _player.Transform.Position;
         }
@@ -53,6 +54,8 @@ namespace AdAstra.Scenes
             if (InputManager.IsKeyDown(Keys.W)) _player.GetComponent<Rigidbody>().AddForce(100.0f);
             if (InputManager.IsKeyDown(Keys.A)) _player.GetComponent<Rigidbody>().AddTorque(-5.0f);
             if (InputManager.IsKeyDown(Keys.D)) _player.GetComponent<Rigidbody>().AddTorque(5.0f);
+            
+            _uiText.GetComponent<TextRenderer>().Text = $"FPS: {FPS.Current:n0}";
         }
     }
 }
