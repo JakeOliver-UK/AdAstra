@@ -28,6 +28,7 @@ namespace AdAstra.Scenes
             _player.GetComponent<Collider>().Width = 64.0f;
             _player.GetComponent<Collider>().Height = 48.0f;
             _player.AddComponent<Rigidbody>();
+            _player.AddComponent<Spaceship>();
 
             _other = WorldEntityManager.Create("Other");
             _other.Transform.Position = new(200.0f);
@@ -51,10 +52,6 @@ namespace AdAstra.Scenes
         {
             base.Update();
 
-            if (InputManager.IsKeyDown(Keys.W)) _player.GetComponent<Rigidbody>().AddForce(100.0f);
-            if (InputManager.IsKeyDown(Keys.A)) _player.GetComponent<Rigidbody>().AddTorque(-5.0f);
-            if (InputManager.IsKeyDown(Keys.D)) _player.GetComponent<Rigidbody>().AddTorque(5.0f);
-            
             _uiText.GetComponent<TextRenderer>().Text = $"FPS: {FPS.Current:n0}";
         }
     }
