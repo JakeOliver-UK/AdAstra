@@ -5,8 +5,8 @@ namespace AdAstra.Engine.Entities.Components
 {
     internal class Rigidbody : Component
     {
-        public Vector2 Velocity => _velocity;
-        public float AngularVelocity => _angularVelocity;
+        public Vector2 Velocity { get => _velocity; set => _velocity = value; }
+        public float AngularVelocity { get => _angularVelocity; set => _angularVelocity = value; }
         public float LinearDrag { get; set; } = 0.5f;
         public float AngularDrag { get; set; } = 0.05f;
         public float Mass { get; set; } = 1.0f;

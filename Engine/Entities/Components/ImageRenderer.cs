@@ -12,6 +12,7 @@ namespace AdAstra.Engine.Entities.Components
         public float Opacity { get; set; } = 1.0f;
         public Vector2 Scale { get; set; } = Vector2.One;
         public ImageAlignment Alignment { get; set; } = ImageAlignment.Center;
+        public float RotationAdjustment { get; set; } = 0.0f;
         public int Layer { get; set; } = 0;
 
         public Vector2 Origin
@@ -41,12 +42,13 @@ namespace AdAstra.Engine.Entities.Components
         {
             float layerDepth = Layer / 10000.0f;
             Color color = Color * Opacity;
+            float adjustedRotation = Entity.Transform.Rotation + RotationAdjustment;
 
             Texture2D texture = AssetManager.Images[Image];
 
             if (texture == null || !IsVisible) return;
 
-            App.Instance.SpriteBatch.Draw(texture, Entity.Transform.Position, null, color, Entity.Transform.Rotation, Origin, Scale, SpriteEffects.None, layerDepth);
+            App.Instance.SpriteBatch.Draw(texture, Entity.Transform.Position, null, color, adjustedRotation, Origin, Scale, SpriteEffects.None, layerDepth);
         }
     }
 
