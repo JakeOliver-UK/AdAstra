@@ -1,4 +1,6 @@
-﻿using AdAstra.Engine.Managers.Global;
+﻿using AdAstra.Engine.Drawing;
+using AdAstra.Engine.Extensions;
+using AdAstra.Engine.Managers.Global;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -14,6 +16,9 @@ namespace AdAstra.Engine.Entities.Components
         public ImageAlignment Alignment { get; set; } = ImageAlignment.Center;
         public float RotationAdjustment { get; set; } = 0.0f;
         public int Layer { get; set; } = 0;
+        public bool DrawBounds { get; set; } = false;
+        public Texture2D Texture => AssetManager.Images[Image];
+        public Polygon Bounds => new(Entity.Transform.Position, 4, Texture?.Width * Scale.X ?? 0, Texture?.Height * Scale.Y ?? 0, Entity.Transform.Rotation + RotationAdjustment);
 
         public Vector2 Origin
         {
@@ -44,11 +49,11 @@ namespace AdAstra.Engine.Entities.Components
             Color color = Color * Opacity;
             float adjustedRotation = Entity.Transform.Rotation + RotationAdjustment;
 
-            Texture2D texture = AssetManager.Images[Image];
+            if (Texture == null || !IsVisible) return;
 
-            if (texture == null || !IsVisible) return;
+            App.Instance.SpriteBatch.Draw(Texture, Entity.Transform.Position, null, color, adjustedRotation, Origin, Scale, SpriteEffects.None, layerDepth);
 
-            App.Instance.SpriteBatch.Draw(texture, Entity.Transform.Position, null, color, adjustedRotation, Origin, Scale, SpriteEffects.None, layerDepth);
+            if (DrawBounds) App.Instance.SpriteBatch.DrawPolygon(Bounds, Color.Lime, 1.0f, Layer + 1);
         }
     }
 

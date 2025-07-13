@@ -13,6 +13,7 @@ namespace AdAstra.Engine.Entities.Components
         public float Opacity { get; set; } = 1.0f;
         public TextAlignment Alignment { get; set; } = TextAlignment.TopLeft;
         public int Layer { get; set; } = 0;
+        public bool IsVisible { get; set; } = true;
 
         public Vector2 Origin
         {
@@ -40,7 +41,7 @@ namespace AdAstra.Engine.Entities.Components
 
         public override void Draw()
         {
-            if (string.IsNullOrEmpty(Text)) return;
+            if (string.IsNullOrEmpty(Text) || !IsVisible) return;
             SpriteFontBase font = AssetManager.Fonts.Get(Font, Size);
             if (font == null) return;
             float layerDepth = Layer / 10000.0f;

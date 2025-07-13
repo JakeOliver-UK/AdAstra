@@ -29,12 +29,30 @@ namespace AdAstra.Engine.Entities.Components
         public event CollisionEventHandler OnCollisionStay;
         public event CollisionEventHandler OnCollisionExit;
 
+        public bool IsCollidingWith(Collider other) => _collisions.Contains(other);
+        
+        public void AddCollision(Collider other)
+        {
+            if (other == null || other == this || !other.Entity.IsActive) return;
+            if (!_collisions.Contains(other)) _collisions.Add(other);
+        }
+
+        public void RemoveCollision(Collider other)
+        {
+            if (other == null || other == this || !other.Entity.IsActive) return;
+            _collisions.Remove(other);
+        }
+
+        public void CallOnCollisionEnter(Collider other) => OnCollisionEnter?.Invoke(other);
+        public void CallOnCollisionStay(Collider other) => OnCollisionStay?.Invoke(other);
+        public void CallOnCollisionExit(Collider other) => OnCollisionExit?.Invoke(other);
+
         public override void Update()
         {
             base.Update();
 
             UpdateBounds();
-            CheckCollisions();
+            //CheckCollisions();
         }
 
         public override void Draw()
@@ -49,7 +67,7 @@ namespace AdAstra.Engine.Entities.Components
             _bounds = new(Entity.Transform.Position, _sides, _width, _height, Entity.Transform.Rotation + MathHelper.ToRadians(AdjustedRotationDegrees));
         }
 
-        private void CheckCollisions()
+        /*private void CheckCollisions()
         {
             Entity[] entities = Entity.Manager.GetWithComponent<Collider>();
 
@@ -82,6 +100,6 @@ namespace AdAstra.Engine.Entities.Components
                     }
                 }
             }
-        }
+        }*/
     }
 }

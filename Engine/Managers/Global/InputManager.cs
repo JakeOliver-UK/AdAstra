@@ -1,5 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace AdAstra.Engine.Managers.Global
 {
@@ -33,6 +36,7 @@ namespace AdAstra.Engine.Managers.Global
         public static bool IsKeyUp(Keys key) => _currentKeyboardState.IsKeyUp(key);
         public static bool IsKeyPressed(Keys key) => _currentKeyboardState.IsKeyDown(key) && _previousKeyboardState.IsKeyUp(key);
         public static bool IsKeyReleased(Keys key) => _currentKeyboardState.IsKeyUp(key) && _previousKeyboardState.IsKeyDown(key);
+        public static Keys[] GetPressedKeys() => _currentKeyboardState.GetPressedKeys();
 
         public static bool IsMouseButtonDown(MouseButton button)
         {
@@ -89,6 +93,17 @@ namespace AdAstra.Engine.Managers.Global
         public static bool IsMouseScrollWheelUp() => _currentMouseState.ScrollWheelValue > _previousMouseState.ScrollWheelValue;
         public static bool IsMouseScrollWheelDown() => _currentMouseState.ScrollWheelValue < _previousMouseState.ScrollWheelValue;
         public static Vector2 MousePosition => new(_currentMouseState.X, _currentMouseState.Y);
+        
+        public static MouseButton[] GetPressedMouseButtons()
+        {
+            List<MouseButton> buttons = [];
+            if (IsMouseButtonDown(MouseButton.Left)) buttons.Add(MouseButton.Left);
+            if (IsMouseButtonDown(MouseButton.Right)) buttons.Add(MouseButton.Right);
+            if (IsMouseButtonDown(MouseButton.Middle)) buttons.Add(MouseButton.Middle);
+            if (IsMouseButtonDown(MouseButton.XButton1)) buttons.Add(MouseButton.XButton1);
+            if (IsMouseButtonDown(MouseButton.XButton2)) buttons.Add(MouseButton.XButton2);
+            return [.. buttons];
+        }
 
         public static bool IsGamePadButtonDown(Buttons button) => _currentGamePadState.IsButtonDown(button);
         public static bool IsGamePadButtonUp(Buttons button) => _currentGamePadState.IsButtonUp(button);
@@ -99,6 +114,34 @@ namespace AdAstra.Engine.Managers.Global
         public static float GamePadLeftTrigger => _currentGamePadState.Triggers.Left;
         public static float GamePadRightTrigger => _currentGamePadState.Triggers.Right;
         public static bool IsGamePadConnected() => _currentGamePadState.IsConnected;
+        
+        public static void Vibrate(float leftMotor, float rightMotor)
+        {
+            if (IsGamePadConnected())
+            {
+                GamePad.SetVibration(PlayerIndex.One, leftMotor, rightMotor);
+            }
+        }
+
+        public static void StopVibration()
+        {
+            if (IsGamePadConnected())
+            {
+                GamePad.SetVibration(PlayerIndex.One, 0.0f, 0.0f);
+            }
+        }
+
+        public static Buttons[] GetPressedGamePadButtons()
+        {
+            List<Buttons> buttons = [];
+            IList list = Enum.GetValues(typeof(Buttons));
+            for (int i = 0; i < list.Count; i++)
+            {
+                Buttons button = (Buttons)list[i];
+                if (IsGamePadButtonDown(button)) buttons.Add(button);
+            }
+            return [.. buttons];
+        }
     }
 
     internal enum MouseButton

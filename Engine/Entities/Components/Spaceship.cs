@@ -19,7 +19,7 @@ namespace AdAstra.Engine.Entities.Components
         public List<Vector2> NextTargets { get; set; } = [];
         public bool DrawTargetLine { get; set; } = true;
         public Color TargetLineColor { get; set; } = Color.White;
-        public float TargetLineOpacity { get; set; } = 0.5f;
+        public float TargetLineOpacity { get; set; } = 0.65f;
         public float TargetLineThickness { get; set; } = 1.0f;
         
         private Vector2 _velocity = Vector2.Zero;

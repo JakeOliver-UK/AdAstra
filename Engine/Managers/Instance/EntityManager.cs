@@ -110,6 +110,53 @@ namespace AdAstra.Engine.Managers.Instance
             {
                 activeEntities[i].Update();
             }
+
+            CheckCollisions();
+        }
+
+        private void CheckCollisions()
+        {
+            Entity[] entities = GetWithComponent<Collider>();
+            
+            for (int i = 0; i < entities.Length; i++)
+            {
+                if (entities[i] == null || !entities[i].IsActive) continue;
+                Collider collider = entities[i].GetComponent<Collider>();
+                if (collider == null) continue;
+                
+                for (int j = 0; j < entities.Length; j++)
+                {
+                    if (entities[j] == null || !entities[j].IsActive) continue;
+                    Collider otherCollider = entities[j].GetComponent<Collider>();
+                    if (otherCollider == null || otherCollider == collider) continue;
+                    
+                    if (collider.Bounds.Intersects(otherCollider.Bounds))
+                    {
+                        if (!collider.IsCollidingWith(otherCollider) || !otherCollider.IsCollidingWith(collider))
+                        {
+                            collider.CallOnCollisionEnter(otherCollider);
+                            otherCollider.CallOnCollisionEnter(collider);
+                            collider.AddCollision(otherCollider);
+                            otherCollider.AddCollision(collider);
+                        }
+                        else
+                        {
+                            collider.CallOnCollisionStay(otherCollider);
+                            otherCollider.CallOnCollisionStay(collider);
+                        }
+                    }
+                    else
+                    {
+                        if (collider.IsCollidingWith(otherCollider) || otherCollider.IsCollidingWith(collider))
+                        {
+                            collider.CallOnCollisionExit(otherCollider);
+                            otherCollider.CallOnCollisionExit(collider);
+                            collider.RemoveCollision(otherCollider);
+                            otherCollider.RemoveCollision(collider);
+                        }
+                    }
+                }
+            }
         }
 
         public void Draw()
