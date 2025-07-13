@@ -9,6 +9,9 @@ namespace AdAstra.Engine.Entities.Components
 {
     internal class Spaceship : Component
     {
+        public string Name { get; set; } = "Spaceship";
+        public Color Color { get; set; } = Color.White;
+        public SpaceshipController Controller { get; set; } = SpaceshipController.None;
         public float Speed { get; set; } = 100.0f;
         public float TurnSpeed { get; set; } = 1.0f;
         public float ArrivalThreshold { get; set; } = 5.0f;
@@ -18,7 +21,6 @@ namespace AdAstra.Engine.Entities.Components
         public Vector2 Target { get; set; } = Vector2.Zero;
         public List<Vector2> NextTargets { get; set; } = [];
         public bool DrawTargetLine { get; set; } = true;
-        public Color TargetLineColor { get; set; } = Color.White;
         public float TargetLineOpacity { get; set; } = 0.65f;
         public float TargetLineThickness { get; set; } = 1.0f;
         
@@ -28,8 +30,13 @@ namespace AdAstra.Engine.Entities.Components
         {
             base.Update();
 
+            if (Controller == SpaceshipController.Player) HandlePlayerInput();
+        }
+
+        private void HandlePlayerInput()
+        {
             Vector2 mousePosition = SceneManager.Current.Camera.ScreenToWorld(InputManager.MousePosition);
-                
+
             if (InputManager.IsKeyUp(Keys.LeftShift) && InputManager.IsMouseButtonPressed(MouseButton.Right))
             {
                 NextTargets.Clear();
@@ -70,7 +77,7 @@ namespace AdAstra.Engine.Entities.Components
                 float current = Entity.Transform.Rotation;
                 float delta = WrapAngle(desiredAngle - current);
                 float maxDelta = TurnSpeed * Time.Delta;
-                    
+
                 if (MathF.Abs(delta) < maxDelta) current = desiredAngle;
                 else current += MathF.Sign(delta) * maxDelta;
 
@@ -106,7 +113,7 @@ namespace AdAstra.Engine.Entities.Components
             
             if (DrawTargetLine && Target != Vector2.Zero)
             {
-                Color targetLineColor = TargetLineColor * TargetLineOpacity;
+                Color targetLineColor = Color * TargetLineOpacity;
                 Vector2 position = Entity.Transform.Position;
                 Vector2 directionToTarget = Target - position;
                 float distanceToTarget = directionToTarget.Length();
@@ -120,7 +127,7 @@ namespace AdAstra.Engine.Entities.Components
                 {
                     for (int i = 0; i < NextTargets.Count; i++)
                     {
-                        targetLineColor = TargetLineColor * (TargetLineOpacity * 0.75f);
+                        targetLineColor = Color * (TargetLineOpacity * 0.75f);
                         Vector2 nextTarget = NextTargets[i];
                         if (i == 0)
                         {
@@ -134,5 +141,12 @@ namespace AdAstra.Engine.Entities.Components
                 }
             }
         }
+    }
+
+    internal enum SpaceshipController
+    {
+        None,
+        Player,
+        AI
     }
 }
