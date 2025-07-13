@@ -19,24 +19,15 @@ namespace AdAstra.Scenes
             
             _player = WorldEntityManager.Create("Player");
             _player.Transform.Position = new(100.0f);
-            _player.AddComponent<ImageRenderer>().Image = "playerShip1_blue";
+            _player.AddComponent<ImageRenderer>().Image = "ship_A";
+            _player.AddComponent<ImageRenderer>().Color = Color.Lime;
             _player.GetComponent<ImageRenderer>().Scale = new(0.5f);
             _player.GetComponent<ImageRenderer>().RotationAdjustment = MathHelper.PiOver2;
             _player.GetComponent<ImageRenderer>().Layer = 1;
             _player.AddComponent<Collider>().Sides = 100;
             _player.GetComponent<Collider>().Width = 64.0f;
             _player.GetComponent<Collider>().Height = 48.0f;
-            _player.AddComponent<Rigidbody>();
-            _player.AddComponent<Spaceship>().ControlType = SpaceshipControlType.Mouse;
-
-            _other = WorldEntityManager.Create("Other");
-            _other.Transform.Position = new(200.0f);
-            _other.AddComponent<ImageRenderer>().Image = "playerShip2_red";
-            _other.GetComponent<ImageRenderer>().Scale = new(0.5f);
-            _other.GetComponent<ImageRenderer>().RotationAdjustment = MathHelper.PiOver2;
-            _other.AddComponent<Collider>().Sides = 100;
-            _other.GetComponent<Collider>().Width = 64.0f;
-            _other.GetComponent<Collider>().Height = 48.0f;
+            _player.AddComponent<Spaceship>();
 
             _uiText = OverlayEntityManager.Create("UIText");
             _uiText.Transform.Position = new(10.0f, 10.0f);

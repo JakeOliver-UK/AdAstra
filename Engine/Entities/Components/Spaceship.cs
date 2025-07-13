@@ -12,15 +12,14 @@ namespace AdAstra.Engine.Entities.Components
         public float Speed { get; set; } = 100.0f;
         public float TurnSpeed { get; set; } = 1.0f;
         public float ArrivalThreshold { get; set; } = 5.0f;
-        public SpaceshipControlType ControlType { get; set; } = SpaceshipControlType.None;
         public Keys KeyboardForward { get; set; } = Keys.W;
         public Keys KeyboardLeft { get; set; } = Keys.A;
         public Keys KeyboardRight { get; set; } = Keys.D;
         public Vector2 Target { get; set; } = Vector2.Zero;
         public List<Vector2> NextTargets { get; set; } = [];
         public bool DrawTargetLine { get; set; } = true;
-        public Color TargetLineColor { get; set; } = Color.Lime;
-        public float TargetLineOpacity { get; set; } = 0.75f;
+        public Color TargetLineColor { get; set; } = Color.White;
+        public float TargetLineOpacity { get; set; } = 0.5f;
         public float TargetLineThickness { get; set; } = 1.0f;
         
         private Vector2 _velocity = Vector2.Zero;
@@ -29,62 +28,68 @@ namespace AdAstra.Engine.Entities.Components
         {
             base.Update();
 
-            if (!Entity.HasComponent<Rigidbody>()) return;
-
-            if (ControlType == SpaceshipControlType.Keyboard)
-            {
-                if (InputManager.IsKeyDown(KeyboardForward)) Entity.GetComponent<Rigidbody>().AddForce(Speed);
-                if (InputManager.IsKeyDown(KeyboardLeft)) Entity.GetComponent<Rigidbody>().AddTorque(-TurnSpeed);
-                if (InputManager.IsKeyDown(KeyboardRight)) Entity.GetComponent<Rigidbody>().AddTorque(TurnSpeed);
-            }
-            else if (ControlType == SpaceshipControlType.Mouse)
-            {
-                Vector2 mousePosition = SceneManager.Current.Camera.ScreenToWorld(InputManager.MousePosition);
+            Vector2 mousePosition = SceneManager.Current.Camera.ScreenToWorld(InputManager.MousePosition);
                 
-                if (InputManager.IsMouseButtonPressed(MouseButton.Left))
-                {
-                    if (Target != Vector2.Zero) _velocity *= 0.5f;
-                    Target = mousePosition;
-                }
+            if (InputManager.IsKeyUp(Keys.LeftShift) && InputManager.IsMouseButtonPressed(MouseButton.Right))
+            {
+                NextTargets.Clear();
+                if (InputManager.MousePosition.X < 0 || InputManager.MousePosition.Y < 0 || InputManager.MousePosition.X > App.Instance.GraphicsDevice.Viewport.Width || InputManager.MousePosition.Y > App.Instance.GraphicsDevice.Viewport.Height) return;
+                if (Target != Vector2.Zero || _velocity != Vector2.Zero) _velocity *= 0.5f;
+                Target = mousePosition;
+            }
+            else if (InputManager.IsKeyDown(Keys.LeftShift) && InputManager.IsMouseButtonPressed(MouseButton.Right))
+            {
+                if (InputManager.MousePosition.X < 0 || InputManager.MousePosition.Y < 0 || InputManager.MousePosition.X > App.Instance.GraphicsDevice.Viewport.Width || InputManager.MousePosition.Y > App.Instance.GraphicsDevice.Viewport.Height) return;
+                if (Target == Vector2.Zero) Target = mousePosition;
+                else NextTargets.Add(mousePosition);
+            }
 
-                if (Target != Vector2.Zero)
-                {
-                    Vector2 pos = Entity.Transform.Position;
-                    Vector2 toTarget = Target - pos;
-                    float dist = toTarget.Length();
+            if (Target != Vector2.Zero)
+            {
+                Vector2 pos = Entity.Transform.Position;
+                Vector2 toTarget = Target - pos;
+                float dist = toTarget.Length();
 
-                    if (dist <= ArrivalThreshold)
+                if (dist <= ArrivalThreshold)
+                {
+                    if (NextTargets.Count > 0)
                     {
-                        _velocity = Vector2.Zero;
+                        Target = NextTargets[0];
+                        NextTargets.RemoveAt(0);
+                        _velocity *= 0.5f;
+                    }
+                    else
+                    {
                         Target = Vector2.Zero;
+                        _velocity = Vector2.Zero;
                         return;
                     }
-
-                    float desiredAngle = MathF.Atan2(toTarget.Y, toTarget.X);
-                    float current = Entity.Transform.Rotation;
-                    float delta = WrapAngle(desiredAngle - current);
-                    float maxDelta = TurnSpeed * Time.Delta;
-                    
-                    if (MathF.Abs(delta) < maxDelta) current = desiredAngle;
-                    else current += MathF.Sign(delta) * maxDelta;
-
-                    Entity.Transform.Rotation = current;
-
-                    if (MathF.Abs(delta) < 0.1f)
-                    {
-                        float targetSpeed = Speed;
-                        float decelerationRange = Speed / 2.0f;
-                        if (dist < decelerationRange) targetSpeed *= dist / decelerationRange;
-
-                        Vector2 forward = new(MathF.Cos(current), MathF.Sin(current));
-                        Vector2 desiredVel = forward * targetSpeed;
-
-                        float t = MathF.Min(1.0f, Speed * Time.Delta / targetSpeed);
-                        _velocity = Vector2.Lerp(_velocity, desiredVel, t);
-                    }
-
-                    Entity.Transform.Position += _velocity * Time.Delta;
                 }
+
+                float desiredAngle = MathF.Atan2(toTarget.Y, toTarget.X);
+                float current = Entity.Transform.Rotation;
+                float delta = WrapAngle(desiredAngle - current);
+                float maxDelta = TurnSpeed * Time.Delta;
+                    
+                if (MathF.Abs(delta) < maxDelta) current = desiredAngle;
+                else current += MathF.Sign(delta) * maxDelta;
+
+                Entity.Transform.Rotation = current;
+
+                if (MathF.Abs(delta) < 0.1f)
+                {
+                    float targetSpeed = Speed;
+                    float decelerationRange = Speed / 2.0f;
+                    if (dist < decelerationRange) targetSpeed *= dist / decelerationRange;
+
+                    Vector2 forward = new(MathF.Cos(current), MathF.Sin(current));
+                    Vector2 desiredVel = forward * targetSpeed;
+
+                    float t = MathF.Min(1.0f, Speed * Time.Delta / targetSpeed);
+                    _velocity = Vector2.Lerp(_velocity, desiredVel, t);
+                }
+
+                Entity.Transform.Position += _velocity * Time.Delta;
             }
         }
 
@@ -99,7 +104,7 @@ namespace AdAstra.Engine.Entities.Components
         {
             base.Draw();
             
-            if (ControlType == SpaceshipControlType.Mouse && DrawTargetLine && Target != Vector2.Zero)
+            if (DrawTargetLine && Target != Vector2.Zero)
             {
                 Color targetLineColor = TargetLineColor * TargetLineOpacity;
                 Vector2 position = Entity.Transform.Position;
@@ -111,14 +116,23 @@ namespace AdAstra.Engine.Entities.Components
                     Vector2 endPoint = position + directionToTarget * distanceToTarget;
                     App.Instance.SpriteBatch.DrawLine(position, endPoint, targetLineColor, TargetLineThickness, 10);
                 }
+                if (NextTargets.Count > 0)
+                {
+                    for (int i = 0; i < NextTargets.Count; i++)
+                    {
+                        targetLineColor = TargetLineColor * (TargetLineOpacity * 0.75f);
+                        Vector2 nextTarget = NextTargets[i];
+                        if (i == 0)
+                        {
+                            App.Instance.SpriteBatch.DrawLine(Target, nextTarget, targetLineColor, TargetLineThickness, 10);
+                        }
+                        else if (nextTarget != Vector2.Zero)
+                        {
+                            App.Instance.SpriteBatch.DrawLine(NextTargets[i - 1], nextTarget, targetLineColor, TargetLineThickness, 10);
+                        }
+                    }
+                }
             }
         }
-    }
-
-    internal enum SpaceshipControlType
-    {
-        None,
-        Keyboard,
-        Mouse
     }
 }
