@@ -12,6 +12,7 @@ namespace AdAstra.Engine.Entities.Components
         public string Name { get; set; } = "Spaceship";
         public Color Color { get; set; } = Color.White;
         public SpaceshipController Controller { get; set; } = SpaceshipController.None;
+        public SpaceshipState State { get; set; } = SpaceshipState.Idle;
         public float Speed { get; set; } = 100.0f;
         public float TurnSpeed { get; set; } = 1.0f;
         public float ArrivalThreshold { get; set; } = 5.0f;
@@ -23,17 +24,21 @@ namespace AdAstra.Engine.Entities.Components
         public bool DrawTargetLine { get; set; } = true;
         public float TargetLineOpacity { get; set; } = 0.65f;
         public float TargetLineThickness { get; set; } = 1.0f;
-        
+
         private Vector2 _velocity = Vector2.Zero;
+        private float _timer = 0.0f;
 
         public override void Update()
         {
             base.Update();
 
-            if (Controller == SpaceshipController.Player) HandlePlayerInput();
+            if (Controller == SpaceshipController.Player) HandlePlayer();
+            else if (Controller == SpaceshipController.AI) HandleAI();
+
+            HandleMovement();
         }
 
-        private void HandlePlayerInput()
+        private void HandlePlayer()
         {
             Vector2 mousePosition = SceneManager.Current.Camera.ScreenToWorld(InputManager.MousePosition);
 
@@ -50,7 +55,67 @@ namespace AdAstra.Engine.Entities.Components
                 if (Target == Vector2.Zero) Target = mousePosition;
                 else NextTargets.Add(mousePosition);
             }
+        }
 
+        private void HandleAI()
+        {
+            switch (State)
+            {
+                case SpaceshipState.Idle:
+                    _timer += Time.Delta;
+                    if (_timer >= 2.0f)
+                    {
+                        _timer = 0.0f;
+                        State = SpaceshipState.LookingForTrades;
+                    }
+                    break;
+                case SpaceshipState.LookingForTrades:
+                    Entity[] spaceStations = Entity.Manager.GetWithComponent<SpaceStation>();
+                    if (spaceStations.Length > 0)
+                    { 
+                        float distance = float.MinValue;
+                        Vector2 target = Vector2.Zero;
+                        for (int i = 0; i < spaceStations.Length; i++)
+                        {
+                            float thisDistance = Vector2.Distance(Entity.Transform.Position, spaceStations[i].Transform.Position);
+                            if (thisDistance > distance)
+                            {
+                                distance = thisDistance;
+                                target = spaceStations[i].Transform.Position;
+                            }
+                        }
+                        if (target != Vector2.Zero)
+                        {
+                            Target = target;
+                            _velocity = Vector2.Zero;
+                            State = SpaceshipState.Moving;
+                        }
+                        else State = SpaceshipState.Idle;
+                    }
+                    else State = SpaceshipState.Idle;
+                    break;
+                case SpaceshipState.Moving:
+                    if (Target == Vector2.Zero)
+                    {
+                        State = SpaceshipState.Trading;
+                    }
+                    break;
+                case SpaceshipState.Trading:
+                    _timer += Time.Delta;
+                    if (_timer >= 2.0f)
+                    {
+                        _timer = 0.0f;
+                        State = SpaceshipState.LookingForTrades;
+                    }
+                    break;
+                default:
+                    break;
+
+            }
+        }
+
+        private void HandleMovement()
+        {
             if (Target != Vector2.Zero)
             {
                 Vector2 pos = Entity.Transform.Position;
@@ -110,7 +175,7 @@ namespace AdAstra.Engine.Entities.Components
         public override void Draw()
         {
             base.Draw();
-            
+
             if (DrawTargetLine && Target != Vector2.Zero)
             {
                 Color targetLineColor = Color * TargetLineOpacity;
@@ -148,5 +213,13 @@ namespace AdAstra.Engine.Entities.Components
         None,
         Player,
         AI
+    }
+
+    internal enum SpaceshipState
+    {
+        Idle,
+        LookingForTrades,
+        Moving,
+        Trading
     }
 }
