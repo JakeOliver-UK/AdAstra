@@ -31,7 +31,7 @@ namespace AdAstra.Engine.Entities.Components
             get => MathF.Atan2(WorldMatrix.M12, WorldMatrix.M11);
             set
             {
-                if (Entity.IsRoot)
+                if (Entity.IsRoot || AlwaysUseLocalRotation)
                 {
                     LocalRotation = value;
                 }
@@ -44,9 +44,31 @@ namespace AdAstra.Engine.Entities.Components
         }
 
         public Matrix LocalMatrix => Matrix.CreateRotationZ(LocalRotation) * Matrix.CreateTranslation(new Vector3(LocalPosition, 0f));
-        public Matrix WorldMatrix => Entity.IsRoot ? LocalMatrix : LocalMatrix * Entity.Parent.GetComponent<Transform>().WorldMatrix;
+
+        public Matrix WorldMatrix
+        {
+            get
+            {
+                if (Entity.IsRoot) return LocalMatrix;
+
+                Transform parentT = Entity.Parent.GetComponent<Transform>();
+                if (AlwaysUseLocalRotation)
+                {
+                    Vector2 parentPos = parentT.Position;
+                    float parentRot = parentT.Rotation;
+                    Vector2 worldPos = parentPos + Vector2.Transform(LocalPosition, Matrix.CreateRotationZ(parentRot));
+                    return Matrix.CreateRotationZ(LocalRotation) * Matrix.CreateTranslation(new Vector3(worldPos, 0f));
+                }
+                else
+                {
+                    return LocalMatrix * parentT.WorldMatrix;
+                }
+            }
+        }
 
         public float LocalRotation { get; set; } = 0.0f;
+
+        public bool AlwaysUseLocalRotation { get; set; } = false;
 
         public Vector2 Forward => new (MathF.Cos(Rotation), MathF.Sin(Rotation));
         public Vector2 Backward => -Forward;

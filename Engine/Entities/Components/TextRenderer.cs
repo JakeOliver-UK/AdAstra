@@ -12,6 +12,7 @@ namespace AdAstra.Engine.Entities.Components
         public Color Color { get; set; } = Color.White;
         public float Opacity { get; set; } = 1.0f;
         public TextAlignment Alignment { get; set; } = TextAlignment.TopLeft;
+        public Vector2 Offset { get; set; } = Vector2.Zero;
         public int Layer { get; set; } = 0;
         public bool IsVisible { get; set; } = true;
 
@@ -47,7 +48,7 @@ namespace AdAstra.Engine.Entities.Components
             float layerDepth = Layer / 10000.0f;
             Color color = Color * Opacity;
 
-            App.Instance.SpriteBatch.DrawString(font, Text, Entity.Transform.Position, color, Entity.Transform.Rotation, Origin, null, layerDepth);
+            App.Instance.SpriteBatch.DrawString(font, Text, Entity.Transform.Position + Offset, color, Entity.Transform.Rotation, Origin, null, layerDepth);
         }
     }
 
