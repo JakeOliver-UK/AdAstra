@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AdAstra.Engine.Entities.Components
 {
@@ -12,8 +13,10 @@ namespace AdAstra.Engine.Entities.Components
     {
         public string Name { get; set; } = "Spaceship";
         public Color Color { get; set; } = Color.White;
+        public double Money { get; set; } = 1000.0d;
         public SpaceshipController Controller { get; set; } = SpaceshipController.None;
         public SpaceshipState State { get; set; } = SpaceshipState.Idle;
+        public Entity DockedAt { get; set; }
         public float Speed { get; set; } = 100.0f;
         public float TurnSpeed { get; set; } = 1.0f;
         public float ArrivalThreshold { get; set; } = 5.0f;
@@ -22,6 +25,9 @@ namespace AdAstra.Engine.Entities.Components
         public Keys KeyboardRight { get; set; } = Keys.D;
         public Vector2 Target { get; set; } = Vector2.Zero;
         public List<Vector2> NextTargets { get; set; } = [];
+        public Entity TradeLocation { get; set; } = null;
+        public Commodity TradeCommodity { get; set; } = Commodity.None;
+        public int TradeAmount { get; set; } = 0;
         public bool DrawTargetLine { get; set; } = true;
         public float TargetLineOpacity { get; set; } = 0.65f;
         public float TargetLineThickness { get; set; } = 1.0f;
@@ -29,6 +35,7 @@ namespace AdAstra.Engine.Entities.Components
 
         private Vector2 _velocity = Vector2.Zero;
         private float _timer = 0.0f;
+        private float _idleTime = 5.0f;
 
         public override void Initialize(Entity entity)
         {
@@ -52,7 +59,6 @@ namespace AdAstra.Engine.Entities.Components
         private void SetupCargo()
         {
             Cargo.Clear();
-            PRNG random = new();
             Commodity[] commodities = (Commodity[])Enum.GetValues(typeof(Commodity));
             for (int i = 0; i < commodities.Length; i++)
             {
@@ -66,11 +72,11 @@ namespace AdAstra.Engine.Entities.Components
         public string GetCargoInfo()
         {
             if (Cargo.Count == 0) return "No cargo available.";
-            string info = "Cargo:\n";
+            string info = "Cargo:/n";
             for (int i = 0; i < Cargo.Count; i++)
             {
                 CommodityCargoItem item = Cargo[i];
-                info += $"{item.Commodity} - Amount: {item.Amount}\n";
+                info += $"{item.Commodity} - Amount: {item.Amount}/n";
             }
             return info;
         }
@@ -100,54 +106,104 @@ namespace AdAstra.Engine.Entities.Components
             {
                 case SpaceshipState.Idle:
                     _timer += Time.Delta;
-                    if (_timer >= 2.0f)
+                    if (_timer >= _idleTime)
                     {
                         _timer = 0.0f;
-                        State = SpaceshipState.LookingForTrades;
+                        State = SpaceshipState.LookingToBuy;
                     }
                     break;
-                case SpaceshipState.LookingForTrades:
-                    Entity[] spaceStations = Entity.Manager.GetWithComponent<SpaceStation>();
-                    if (spaceStations.Length > 0)
-                    { 
-                        float distance = float.MinValue;
-                        Vector2 target = Vector2.Zero;
-                        for (int i = 0; i < spaceStations.Length; i++)
-                        {
-                            float thisDistance = Vector2.Distance(Entity.Transform.Position, spaceStations[i].Transform.Position);
-                            if (thisDistance > distance)
-                            {
-                                distance = thisDistance;
-                                target = spaceStations[i].Transform.Position;
-                            }
-                        }
-                        if (target != Vector2.Zero)
-                        {
-                            Target = target;
-                            _velocity = Vector2.Zero;
-                            State = SpaceshipState.Moving;
-                        }
-                        else State = SpaceshipState.Idle;
-                    }
+                case SpaceshipState.LookingToBuy:
+                    if (LookToBuy()) State = SpaceshipState.MovingToBuy;
                     else State = SpaceshipState.Idle;
                     break;
-                case SpaceshipState.Moving:
+                case SpaceshipState.MovingToBuy:
                     if (Target == Vector2.Zero)
                     {
-                        State = SpaceshipState.Trading;
+                        State = SpaceshipState.CheckingBuy;
+                        DockedAt = TradeLocation;
+                        TradeLocation = null;
                     }
                     break;
-                case SpaceshipState.Trading:
-                    _timer += Time.Delta;
-                    if (_timer >= 2.0f)
-                    {
-                        _timer = 0.0f;
-                        State = SpaceshipState.LookingForTrades;
-                    }
+                case SpaceshipState.CheckingBuy:
+                    if (CheckToBuy()) State = SpaceshipState.Buying;
+                    else State = SpaceshipState.LookingToBuy;
                     break;
-                default:
+                case SpaceshipState.Buying:
+                    Buy();
+                    State = SpaceshipState.Idle;
                     break;
+                case SpaceshipState.LookingToSell:
+                    break;
+                case SpaceshipState.MovingToSell:
+                    break;
+                case SpaceshipState.CheckingSell:
+                    break;
+                case SpaceshipState.Selling:
+                    break;
+            }
+        }
 
+        private bool LookToBuy()
+        {
+            Entity[] spaceStations = Entity.Manager.GetWithComponent<SpaceStation>();
+            List<MarketItem> marketItems = [];
+
+            if (spaceStations != null && spaceStations.Length > 0)
+            {
+                for (int i = 0; i < spaceStations.Length; i++)
+                {
+                    marketItems.AddRange(spaceStations[i].GetComponent<SpaceStation>().MarketItems);
+                }
+
+                marketItems.RemoveAll(x => x.Quantity == 0);
+
+                if (marketItems.Count > 0)
+                {
+                    MarketItem cheapest;
+
+                    if (TradeCommodity == Commodity.None) cheapest = marketItems.MinBy(x => x.Price);
+                    else cheapest = marketItems.FindAll(x => x.Equals(TradeCommodity)).MinBy(x => x.Price);
+
+                    Target = cheapest.Location.Entity.Transform.Position;
+                    TradeAmount = Random.Shared.Next(1, cheapest.Quantity);
+                    TradeLocation = cheapest.Location.Entity;
+                    TradeCommodity = cheapest.Commodity;
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool CheckToBuy()
+        {
+            SpaceStation dock = DockedAt.GetComponent<SpaceStation>();
+            if (dock != null)
+            {
+                if (dock.MarketItems.Any(x => x.Commodity == TradeCommodity))
+                {
+                    MarketItem marketItem = dock.MarketItems.FirstOrDefault(x => x.Commodity == TradeCommodity);
+                    if (marketItem.Quantity >= TradeAmount) return true;
+                }
+            }
+
+            return false;
+        }
+
+        private void Buy()
+        {
+            SpaceStation dock = DockedAt.GetComponent<SpaceStation>();
+            if (dock != null)
+            {
+                if (dock.MarketItems.Any(x => x.Commodity == TradeCommodity))
+                {
+                    MarketItem marketItem = dock.MarketItems.FirstOrDefault(x => x.Commodity == TradeCommodity);
+                    marketItem.Quantity -= TradeAmount;
+                    double price = TradeAmount * marketItem.Price;
+                    Money -= price;
+                    CommodityCargoItem cargo = Cargo.FirstOrDefault(x => x.Commodity == TradeCommodity);
+                    cargo.Amount += TradeAmount;
+                }
             }
         }
 
@@ -255,9 +311,14 @@ namespace AdAstra.Engine.Entities.Components
     internal enum SpaceshipState
     {
         Idle,
-        LookingForTrades,
-        Moving,
-        Trading
+        LookingToBuy,
+        MovingToBuy,
+        CheckingBuy,
+        Buying,
+        LookingToSell,
+        MovingToSell,
+        CheckingSell,
+        Selling
     }
 
     internal struct CommodityCargoItem(Commodity commodity, int amount)

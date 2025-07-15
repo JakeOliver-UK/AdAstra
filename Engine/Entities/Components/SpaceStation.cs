@@ -20,11 +20,11 @@ namespace AdAstra.Engine.Entities.Components
         public string GetMarketItemInfo()
         {
             if (MarketItems.Count == 0) return "No items available in the market.";
-            string info = "Market Items:\n";
+            string info = "Market Items:/n";
             for (int i = 0; i < MarketItems.Count; i++)
             {
                 MarketItem item = MarketItems[i];
-                info += $"{item.Commodity} - Quantity: {item.Quantity}, Price: {item.Price:C}\n";
+                info += $"{item.Commodity} - Quantity: {item.Quantity} - Price: {item.Price:n2}/n";
             }
             return info;
         }
@@ -39,8 +39,8 @@ namespace AdAstra.Engine.Entities.Components
                 Commodity commodity = commodities[i];
                 if (commodity == Commodity.None) continue;
                 int quantity = random.Int(1, 100);
-                float price = random.Float(100.0f, 500.0f);
-                MarketItems.Add(new MarketItem(commodity, quantity, price));
+                double price = Math.Round(random.Double(100.0d, 500.0d), 2);
+                MarketItems.Add(new MarketItem(commodity, quantity, price, this));
             }
         }
     }
@@ -59,10 +59,11 @@ namespace AdAstra.Engine.Entities.Components
         RareMaterials
     }
 
-    internal struct MarketItem(Commodity commodity, int quantity, float price)
+    internal struct MarketItem(Commodity commodity, int quantity, double price, SpaceStation location)
     {
         public Commodity Commodity { get; set; } = commodity;
         public int Quantity { get; set; } = quantity;
-        public float Price { get; set; } = price;
+        public double Price { get; set; } = price;
+        public SpaceStation Location { get; set; } = location;
     }
 }

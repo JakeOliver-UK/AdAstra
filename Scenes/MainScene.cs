@@ -80,12 +80,14 @@ namespace AdAstra.Scenes
             {
                 _uiTooltip.GetComponent<TextRenderer>().Text = $"/tu{name}/td/n{main.GetComponent<Spaceship>().GetCargoInfo()}";
                 _uiTooltip.GetComponent<TextRenderer>().Color = color;
+                _uiTooltip.GetComponent<TextRenderer>().Offset = new(12.0f, 12.0f);
                 _uiTooltip.GetComponent<TextRenderer>().IsVisible = true;
             };
             main.GetComponent<MouseEvents>().OnMouseLeave += () =>
             {
                 _uiTooltip.GetComponent<TextRenderer>().Text = string.Empty;
                 _uiTooltip.GetComponent<TextRenderer>().Color = Color.White;
+                _uiTooltip.GetComponent<TextRenderer>().Offset = Vector2.Zero;
                 _uiTooltip.GetComponent<TextRenderer>().IsVisible = false;
             };
 
@@ -113,6 +115,7 @@ namespace AdAstra.Scenes
             {
                 _uiTooltip.GetComponent<TextRenderer>().Text = $"/tu{name}/td/n{main.GetComponent<SpaceStation>().GetMarketItemInfo()}";
                 _uiTooltip.GetComponent<TextRenderer>().Color = color;
+                _uiTooltip.GetComponent<TextRenderer>().Offset = new(12.0f, 12.0f);
                 _uiTooltip.GetComponent<TextRenderer>().IsVisible = true;
             };
 
@@ -120,6 +123,7 @@ namespace AdAstra.Scenes
             {
                 _uiTooltip.GetComponent<TextRenderer>().Text = string.Empty;
                 _uiTooltip.GetComponent<TextRenderer>().Color = Color.White;
+                _uiTooltip.GetComponent<TextRenderer>().Offset = Vector2.Zero;
                 _uiTooltip.GetComponent<TextRenderer>().IsVisible = false;
             };
 
