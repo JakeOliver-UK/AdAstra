@@ -1,5 +1,6 @@
 ﻿using AdAstra.Engine.Managers.Global;
 using FontStashSharp;
+using FontStashSharp.RichText;
 using Microsoft.Xna.Framework;
 
 namespace AdAstra.Engine.Entities.Components
@@ -12,6 +13,7 @@ namespace AdAstra.Engine.Entities.Components
         public Color Color { get; set; } = Color.White;
         public float Opacity { get; set; } = 1.0f;
         public TextAlignment Alignment { get; set; } = TextAlignment.TopLeft;
+        public TextHorizontalAlignment HorizontalAlignment { get; set; } = TextHorizontalAlignment.Left;
         public Vector2 Offset { get; set; } = Vector2.Zero;
         public int Layer { get; set; } = 0;
         public bool IsVisible { get; set; } = true;
@@ -47,8 +49,13 @@ namespace AdAstra.Engine.Entities.Components
             if (font == null) return;
             float layerDepth = Layer / 10000.0f;
             Color color = Color * Opacity;
+            RichTextLayout rtl = new()
+            {
+                Font = font,
+                Text = Text,
+            };
 
-            App.Instance.SpriteBatch.DrawString(font, Text, Entity.Transform.Position + Offset, color, Entity.Transform.Rotation, Origin, null, layerDepth);
+            rtl.Draw(App.Instance.SpriteBatch, Entity.Transform.Position + Offset, color, Entity.Transform.Rotation, Origin, null, layerDepth, HorizontalAlignment);
         }
     }
 

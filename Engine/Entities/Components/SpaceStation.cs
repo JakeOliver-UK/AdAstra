@@ -21,8 +21,9 @@ namespace AdAstra.Engine.Entities.Components
         {
             if (MarketItems.Count == 0) return "No items available in the market.";
             string info = "Market Items:\n";
-            foreach (var item in MarketItems)
+            for (int i = 0; i < MarketItems.Count; i++)
             {
+                MarketItem item = MarketItems[i];
                 info += $"{item.Commodity} - Quantity: {item.Quantity}, Price: {item.Price:C}\n";
             }
             return info;
@@ -31,14 +32,14 @@ namespace AdAstra.Engine.Entities.Components
         private void GenerateMarketItems()
         {
             MarketItems.Clear();
-            var random = new PRNG();
-            int itemCount = random.Int(5, 11);
-            for (int i = 0; i < itemCount; i++)
+            PRNG random = new();
+            Commodity[] commodities = (Commodity[])Enum.GetValues(typeof(Commodity));
+            for (int i = 0; i < commodities.Length; i++)
             {
-                Commodity commodity = (Commodity)random.Int(1, Enum.GetValues(typeof(Commodity)).Length);
-                int quantity = random.Int(1, 101);
-                float price = random.Float(1.0f, 100.0f);
-                
+                Commodity commodity = commodities[i];
+                if (commodity == Commodity.None) continue;
+                int quantity = random.Int(1, 100);
+                float price = random.Float(100.0f, 500.0f);
                 MarketItems.Add(new MarketItem(commodity, quantity, price));
             }
         }

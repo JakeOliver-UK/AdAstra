@@ -76,23 +76,17 @@ namespace AdAstra.Scenes
             if (isPlayer) main.GetComponent<Spaceship>().Controller = SpaceshipController.Player;
             else main.GetComponent<Spaceship>().Controller = SpaceshipController.AI;
 
-            Entity label = WorldEntityManager.Create($"{id}_label");
-            label.SetParent(main);
-            label.Transform.AlwaysUseLocalRotation = true;
-            label.AddComponent<TextRenderer>().Text = name;
-            label.GetComponent<TextRenderer>().Color = color;
-            label.GetComponent<TextRenderer>().Layer = main.GetComponent<ImageRenderer>().Layer + 100;
-            label.GetComponent<TextRenderer>().Alignment = TextAlignment.CenterLeft;
-            label.GetComponent<TextRenderer>().Offset = new Vector2(16.0f, 0.0f);
-            label.GetComponent<TextRenderer>().IsVisible = false;
-
             main.AddComponent<MouseEvents>().OnMouseStayConstant += () =>
             {
-                label.GetComponent<TextRenderer>().IsVisible = true;
+                _uiTooltip.GetComponent<TextRenderer>().Text = $"/tu{name}/td/n{main.GetComponent<Spaceship>().GetCargoInfo()}";
+                _uiTooltip.GetComponent<TextRenderer>().Color = color;
+                _uiTooltip.GetComponent<TextRenderer>().IsVisible = true;
             };
             main.GetComponent<MouseEvents>().OnMouseLeave += () =>
             {
-                label.GetComponent<TextRenderer>().IsVisible = false;
+                _uiTooltip.GetComponent<TextRenderer>().Text = string.Empty;
+                _uiTooltip.GetComponent<TextRenderer>().Color = Color.White;
+                _uiTooltip.GetComponent<TextRenderer>().IsVisible = false;
             };
 
             return main;
@@ -109,32 +103,23 @@ namespace AdAstra.Scenes
             main.GetComponent<ImageRenderer>().Color = color;
             main.GetComponent<ImageRenderer>().Scale = new(0.5f);
             main.GetComponent<ImageRenderer>().RotationAdjustment = MathHelper.PiOver2;
-            main.GetComponent<ImageRenderer>().Layer = 10;
+            main.GetComponent<ImageRenderer>().Layer = 5;
             main.AddComponent<Collider>().Sides = 100;
             main.GetComponent<Collider>().Width = 16.0f;
             main.GetComponent<Collider>().Height = 16.0f;
             main.AddComponent<SpaceStation>().Color = color;
 
-            Entity label = WorldEntityManager.Create($"{id}_label");
-            label.SetParent(main);
-            label.Transform.AlwaysUseLocalRotation = true;
-            label.AddComponent<TextRenderer>().Text = name;
-            label.GetComponent<TextRenderer>().Color = color;
-            label.GetComponent<TextRenderer>().Layer = main.GetComponent<ImageRenderer>().Layer + 100;
-            label.GetComponent<TextRenderer>().Alignment = TextAlignment.CenterLeft;
-            label.GetComponent<TextRenderer>().Offset = new Vector2(16.0f, 0.0f);
-            label.GetComponent<TextRenderer>().IsVisible = false;
-
             main.AddComponent<MouseEvents>().OnMouseStayConstant += () =>
             {
-                label.GetComponent<TextRenderer>().IsVisible = true;
-                _uiTooltip.GetComponent<TextRenderer>().Text = main.GetComponent<SpaceStation>().GetMarketItemInfo();
+                _uiTooltip.GetComponent<TextRenderer>().Text = $"/tu{name}/td/n{main.GetComponent<SpaceStation>().GetMarketItemInfo()}";
+                _uiTooltip.GetComponent<TextRenderer>().Color = color;
                 _uiTooltip.GetComponent<TextRenderer>().IsVisible = true;
             };
+
             main.GetComponent<MouseEvents>().OnMouseLeave += () =>
             {
-                label.GetComponent<TextRenderer>().IsVisible = false;
                 _uiTooltip.GetComponent<TextRenderer>().Text = string.Empty;
+                _uiTooltip.GetComponent<TextRenderer>().Color = Color.White;
                 _uiTooltip.GetComponent<TextRenderer>().IsVisible = false;
             };
 

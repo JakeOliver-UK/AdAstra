@@ -1,5 +1,6 @@
 ﻿using AdAstra.Engine.Extensions;
 using AdAstra.Engine.Managers.Global;
+using AdAstra.Engine.Maths;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using System;
@@ -24,9 +25,19 @@ namespace AdAstra.Engine.Entities.Components
         public bool DrawTargetLine { get; set; } = true;
         public float TargetLineOpacity { get; set; } = 0.65f;
         public float TargetLineThickness { get; set; } = 1.0f;
+        public List<CommodityCargoItem> Cargo { get; set; } = [];
 
         private Vector2 _velocity = Vector2.Zero;
         private float _timer = 0.0f;
+
+        public override void Initialize(Entity entity)
+        {
+            base.Initialize(entity);
+            
+            SetupCargo();
+            if (Controller == SpaceshipController.Player) Entity.Tags.Add("Player");
+            else if (Controller == SpaceshipController.AI) Entity.Tags.Add("AI");
+        }
 
         public override void Update()
         {
@@ -36,6 +47,32 @@ namespace AdAstra.Engine.Entities.Components
             else if (Controller == SpaceshipController.AI) HandleAI();
 
             HandleMovement();
+        }
+
+        private void SetupCargo()
+        {
+            Cargo.Clear();
+            PRNG random = new();
+            Commodity[] commodities = (Commodity[])Enum.GetValues(typeof(Commodity));
+            for (int i = 0; i < commodities.Length; i++)
+            {
+                Commodity commodity = commodities[i];
+                if (commodity == Commodity.None) continue;
+                int amount = 0;
+                Cargo.Add(new CommodityCargoItem(commodity, amount));
+            }
+        }
+
+        public string GetCargoInfo()
+        {
+            if (Cargo.Count == 0) return "No cargo available.";
+            string info = "Cargo:\n";
+            for (int i = 0; i < Cargo.Count; i++)
+            {
+                CommodityCargoItem item = Cargo[i];
+                info += $"{item.Commodity} - Amount: {item.Amount}\n";
+            }
+            return info;
         }
 
         private void HandlePlayer()
@@ -221,5 +258,11 @@ namespace AdAstra.Engine.Entities.Components
         LookingForTrades,
         Moving,
         Trading
+    }
+
+    internal struct CommodityCargoItem(Commodity commodity, int amount)
+    {
+        public Commodity Commodity { get; set; } = commodity;
+        public int Amount { get; set; } = amount;
     }
 }
